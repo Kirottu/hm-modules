@@ -41,7 +41,7 @@ in
           { name, config, ... }:
           {
             options = {
-              config = lib.mkOption {
+              settings = lib.mkOption {
                 type = yamlFormat.type;
                 default = { };
                 description = ''
