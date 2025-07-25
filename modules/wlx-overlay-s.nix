@@ -28,30 +28,19 @@ in
       '';
       default = null;
     };
+    settings = lib.mkOption {
+      description = ''
+        Main config options
+      '';
+      type = nullOr yamlFormat.type;
+      default = null;
+    };
     openxrActions = lib.mkOption {
       type = nullOr path;
       description = ''
         WlxOverlay-S bindings file.
       '';
       default = null;
-    };
-    extraConfigs = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule (
-          { name, config, ... }:
-          {
-            options = {
-              config = lib.mkOption {
-                type = yamlFormat.type;
-                default = { };
-                description = ''
-                  Extra config to be placed in `$XDG_CONFIG_HOME/wlxoverlay/conf.d`
-                '';
-              };
-            };
-          }
-        )
-      );
     };
     dashboard = {
       package = lib.mkOption {
@@ -78,30 +67,22 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable (
-    lib.mkMerge (
-      # [
-      #   {
-      #     xdg.configFile."wlxoverlay/watch.yaml" = lib.mkIf (cfg.watch != null) {
-      #       source = cfg.watch;
-      #     };
-      #     xdg.configFile."wlxoverlay/openxr_actions.json5" = lib.mkIf (cfg.openxrActions != null) {
-      #       source = cfg.openxrActions;
-      #     };
-      #     xdg.configFile."wlxoverlay/wayvr.conf.d/dashboard.yaml" = lib.mkIf (cfg.dashboard.package != null) {
-      #       text = ''
-      #         dashboard:
-      #           exec: "${lib.getExe cfg.dashboard.package}"
-      #           args: "${cfg.dashboard.args}"
-      #           env: [${lib.concatStrings (builtins.map (env: "\"${env}\",") cfg.dashboard.env)}]
-      #       '';
-      #     };
-      #   }
-      # ]
-      lib.mapAttrsToList (name: value: {
-        xdg.configFile."wlxoverlay/conf.d/${name}".source =
-          yamlFormat.generate "wlxoverlay-${name}" value.config;
-      }) cfg.extraConfigs
-    )
-  );
+  config = lib.mkIf cfg.enable {
+    xdg.configFile."wlxoverlay/watch.yaml" = lib.mkIf (cfg.watch != null) {
+      source = cfg.watch;
+    };
+    xdg.configFile."wlxoverlay/openxr_actions.json5" = lib.mkIf (cfg.openxrActions != null) {
+      source = cfg.openxrActions;
+    };
+    xdg.configFile."wlxoverlay/wayvr.conf.d/dashboard.yaml" = lib.mkIf (cfg.dashboard.package != null) {
+      source = yamlFormat.generate "wlxoverlay-watch.yaml" {
+        exec = lib.getExe cfg.dashboard.package;
+        args = cfg.dashboard.args;
+        env = cfg.dashboard.env;
+      };
+    };
+    xdg.configFile."wlxoverlay/conf.d/settings.yaml" = lib.mkIf (cfg.settings != null) {
+      source = yamlFormat.generate "wlxoverlay-settings.yaml" cfg.settings;
+    };
+  };
 }
