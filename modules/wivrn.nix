@@ -68,5 +68,8 @@ in
           cfg.settings
       );
     };
+
+    xdg.configFile."openxr/1/active_runtime.json".source =
+      "{cfg.package}/share/openxr/1/openxr_wivrn.json";
   };
 }
