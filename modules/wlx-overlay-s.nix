@@ -76,9 +76,11 @@ in
     };
     xdg.configFile."wlxoverlay/wayvr.conf.d/dashboard.yaml" = lib.mkIf (cfg.dashboard.package != null) {
       source = yamlFormat.generate "wlxoverlay-watch.yaml" {
-        exec = lib.getExe cfg.dashboard.package;
-        args = cfg.dashboard.args;
-        env = cfg.dashboard.env;
+        dashboard = {
+          exec = lib.getExe cfg.dashboard.package;
+          args = cfg.dashboard.args;
+          env = cfg.dashboard.env;
+        };
       };
     };
     xdg.configFile."wlxoverlay/conf.d/settings.yaml" = lib.mkIf (cfg.settings != null) {
